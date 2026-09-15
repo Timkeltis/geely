@@ -1,5 +1,5 @@
 /*
- * 吉利汽车：Loon 专用凭据获取补丁，2026-09-14
+ * 吉利汽车：Loon 专用凭据获取补丁，2026-09-15（获取提醒版）
  * 配合 wf021325/qx/task/geely.js 的原签到任务使用。
  * 类型：http-request；匹配：^https:\/\/app\.geely\.com(?::443)?\/
  * 无需请求体。MITM hostname 添加 app.geely.com。
@@ -8,6 +8,25 @@
  */
 (function () {
     var title = '吉利汽车 Cookie';
+    // 相同凭据最多每 60 秒提醒一次；更新凭据立即提醒。
+    function reportCapture(changed) {
+        var now = Date.now();
+        var date = new Date(now);
+        function pad(n) { return ('0' + n).slice(-2); }
+        var time = date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) +
+            ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+        var state = changed ? '已更新本地凭据' : '与已保存凭据一致';
+        console.log('[吉利 Cookie] 本次获取成功；' + state + '；获取时间：' + time);
+        $persistentStore.write(JSON.stringify({at: now, time: time, changed: changed}), 'geely_capture_last_seen');
+        var last = Number($persistentStore.read('geely_capture_last_notice')) || 0;
+        if (!changed && last > 0 && now >= last && now - last < 60000) {
+            console.log('[吉利 Cookie] 60 秒内重复获取，本次不重复弹窗。');
+            return;
+        }
+        $notification.post(title, '本次获取成功，' + (changed ? '已更新' : '凭据一致'),
+            '获取时间：' + time + '\n' + state + '。已从本次 App 请求读取 token 和 deviceSN，可运行签到任务验证。');
+        $persistentStore.write(String(now), 'geely_capture_last_notice');
+    }
     function clean(value) {
         if (typeof value !== 'string') return '';
         value = value.trim();
@@ -53,12 +72,12 @@
         }
         var old = object($persistentStore.read('geely_val'));
         if (old.token === token && old.devicesn === device) {
-            console.log('[吉利 Cookie] 凭据已保存，无变化。');
+            reportCapture(false);
             return;
         }
         var saved = $persistentStore.write(JSON.stringify({token: token, devicesn: device}), 'geely_val');
         if (saved) {
-            $notification.post(title, '获取成功', '已保存 token 和 deviceSN，可运行原签到任务。建议关闭本获取规则，需要更新时再开启。');
+            reportCapture(true);
         } else {
             $notification.post(title, '保存失败', 'Loon 本地存储写入失败，请重试。');
         }
