@@ -1,5 +1,7 @@
 # 吉利汽车 Loon 脚本备份
 
+来源与第三方归属见 [SOURCES.md](./SOURCES.md)。
+
 - `geely-cookie.loon.js`：独立的 Loon 获取补丁，保存到本机 `geely_val`，不上传凭据。
 - `geely.js`：wf021325/qx 原签到脚本的未修改副本。
 - `loon.conf`：使用本仓库远程链接的配置片段，合并到现有配置使用。
