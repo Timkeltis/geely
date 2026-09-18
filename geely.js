@@ -15,10 +15,10 @@
 
 ====================================
 [rewrite_local]
-^https?:\/\/app\.geely\.com\/my\/getActionPost$ url script-response-body https://raw.githubusercontent.com/wf021325/qx/master/task/geely.js
+^https?:\/\/app\.geely\.com\/my\/getActionPost$ url script-response-body https://raw.githubusercontent.com/Timkeltis/geely/main/geely.js
 
 [task_local]
-1 0 * * * https://raw.githubusercontent.com/wf021325/qx/master/task/geely.js, tag= 吉利汽车签到, enabled=true
+1 0 * * * https://raw.githubusercontent.com/Timkeltis/geely/main/geely.js, tag= 吉利汽车签到, enabled=true
 
 [mitm]
 hostname = app.geely.com
@@ -216,7 +216,7 @@ async function intCryptoJS() {
         return $.isNode() ? global.CryptoJS : CryptoJS;
     }
     if($.is_debug !== 'true'){//调试模式默认从网络读取js脚本
-        let script_str = ($.isNode() ? require("crypto-js") : $.getdata("cryptojs_Script")) || "";
+        let script_str = ($.isNode() ? require("./crypto-js.js") : $.getdata("cryptojs_Script")) || "";
         if ($.isNode()) {
             $.log("✅ " + $.name + ": node环境，默认使用crypto-js模块");
             return script_str;
@@ -230,7 +230,7 @@ async function intCryptoJS() {
     // const script_str = (await $.http.get('http://192.168.2.170:8080/crypto-js.min.js')).body;
     // Eval_Crypto(script_str);
     return new Promise(async resolve => {
-        $.getScript('https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js').then(script_str => {
+        $.getScript('https://raw.githubusercontent.com/Timkeltis/geely/main/crypto-js.js').then(script_str => {
             $.setdata(script_str, "cryptojs_Script");
             Eval_Crypto(script_str)
             $.log("✅ CryptoJS加载成功");
